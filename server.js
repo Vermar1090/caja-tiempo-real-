@@ -4,14 +4,39 @@ const socketIo = require('socket.io');
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcrypt');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
+// Configuración de entorno
+const PORT = process.env.PORT || 3000;
+const NODE_ENV = process.env.NODE_ENV || 'development';
+
+// Configurar base de datos según el entorno
+const dbPath = NODE_ENV === 'production' ? './data/db.sqlite' : './db.sqlite';
+
+// Crear directorio data si no existe (para producción)
+if (NODE_ENV === 'production') {
+  if (!fs.existsSync('./data')) {
+    fs.mkdirSync('./data', { recursive: true });
+  }
+}
+
 // Middleware
 app.use(express.static('public'));
 app.use(express.json());
+
+// Inicializar base de datos
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error('Error conectando a la base de datos:', err.message);
+    process.exit(1);
+  } else {
+    console.log(`Base de datos conectada: ${dbPath}`);
+  }
+});
 
 // Inicializar base de datos
 const db = new sqlite3.Database('./db.sqlite');
@@ -362,7 +387,7 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`📊 Base de datos: ${dbPath}`);
   
   if (NODE_ENV === 'development') {
-    console.log(`🔗 Local: http://localhost:3000`);
+    console.log(`🔗 Local: http://localhost:${PORT}`);
   }
   
   console.log('\n👥 Usuarios de prueba:');
@@ -389,5 +414,4 @@ const gracefulShutdown = (signal) => {
 };
 
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));

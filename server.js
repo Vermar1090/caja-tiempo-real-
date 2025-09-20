@@ -38,8 +38,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
   }
 });
 
-// Inicializar base de datos
-const db = new sqlite3.Database('./db.sqlite');
+// Variable para mantener el turno activo en memoria
+let turnoActivo = null;
 
 // Crear tablas si no existen
 db.serialize(() => {
@@ -138,9 +138,6 @@ db.serialize(() => {
     });
   }, 500);
 });
-
-// Variable para mantener el turno activo en memoria
-let turnoActivo = null;
 
 // Rutas
 app.get('/', (req, res) => {
@@ -381,6 +378,7 @@ io.on('connection', (socket) => {
   });
 });
 
+// Iniciar servidor
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
   console.log(`🌍 Entorno: ${NODE_ENV}`);

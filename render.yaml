@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: caja-tiempo-real
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        fromService: true
+    autoDeploy: false
+    disk:
+      name: sqlite-data
+      mountPath: /opt/render/project/src
+      sizeGB: 1

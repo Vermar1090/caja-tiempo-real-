@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Caja - POS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn-logout {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .alert.success {
+            background-color: #dcfce7;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+
+        .alert.error {
+            background-color: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+
+        .alert.info {
+            background-color: #dbeafe;
+            border: 1px solid #bfdbfe;
+            color: #1d4ed8;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .card h3 {
+            margin-bottom: 1rem;
+            color: #22c55e;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 0.5rem;
+        }
+
+        .turno-controls {
+            grid-column: span 2;
+        }
+
+        .status-bar {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #22c55e;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.closed {
+            background-color: #ef4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .quick-btn {
+            padding: 1rem;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .quick-btn:hover {
+            border-color: #22c55e;
+            background: #f0fdf4;
+        }
+
+        .quick-btn.active {
+            border-color: #22c55e;
+            background: #dcfce7;
+        }
+
+        .resumen-caja {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .resumen-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .resumen-item:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            color: #22c55e;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .loading.show {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-bar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1>🛒 Sistema de Caja - POS</h1>
+            <div class="user-info">
+                <span id="username">Cargando...</span>
+                <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="alert" class="alert"></div>
+
+        <!-- Control de Turno -->
+        <div class="card turno-controls">
+            <div class="status-bar">
+                <div class="status-info">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Verificando estado...</span>
+                </div>
+                <div id="turnoInfo">
+                    <strong>Saldo Inicial: $<span id="saldoInicial">0.00</span></strong>
+                </div>
+            </div>
+
+            <div id="iniciarTurnoSection">
+                <h3>🔓 Abrir Caja (Arqueo Inicial)</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="saldoInicialInput">Saldo Inicial en Efectivo:</label>
+                        <input type="number" id="saldoInicialInput" step="0.01" min="0" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-primary" onclick="abrirTurno()">
+                            <span class="loading" id="loadingAbrir"></span>
+                            Abrir Caja
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="cerrarTurnoSection" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>🔒 Cerrar Caja (Arqueo Final)</h3>
+                    <button class="btn btn-danger" onclick="mostrarModalCerrarTurno()">
+                        Cerrar Turno
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <!-- Registrar Movimientos -->
+            <div class="card">
+                <h3>💰 Registrar Movimiento</h3>
+                
+                <div class="quick-actions">
+                    <div class="quick-btn" onclick="seleccionarTipo('venta')">
+                        <div>💵</div>
+                        <div>Venta</div>
+                    </div>
+                    <div class="quick-btn" onclick="seleccionarTipo('gasto')">
+                        <div>💸</div>
+                        <div>Gasto</div>
+                    </div>
+                    <div class="quick-btn" onclick="seleccionarTipo('ingreso_extra')">
+                        <div>💰</div>
+                        <div>Ingreso</div>
+                    </div>
+                </div>
+
+                <form id="movimientoForm">
+                    <div class="form-group">
+                        <label for="tipoMovimiento">Tipo de Movimiento:</label>
+                        <select id="tipoMovimiento" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="venta">Venta</option>
+                            <option value="gasto">Gasto</option>
+                            <option value="ingreso_extra">Ingreso Extra</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descripcion">Descripción:</label>
+                        <input type="text" id="descripcion" placeholder="Ej: Venta de productos, Compra de suministros..." required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="monto">Monto:</label>
+                            <input type="number" id="monto" step="0.01" min="0.01" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="metodoPago">Método:</label>
+                            <select id="metodoPago" required>
+                                <option value="">Método...</option>
+                                <option value="efectivo">Efectivo</option>
+                                <option value="transferencia">Transferencia</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <span class="loading" id="loadingMovimiento"></span>
+                        Registrar Movimiento
+                    </button>
+                </form>
+            </div>
+
+            <!-- Resumen de Caja -->
+            <div class="card">
+                <h3>📊 Resumen de Caja</h3>
+                <div class="resumen-caja" id="resumenCaja">
+                    <div class="resumen-item">
+                        <span>Gastos:</span>
+                        <span class="text-red">-$<span id="resumenGastos">0.00</span></span>
+                    </div>
+                    <div class="resumen-item">
+                        <span>Ingresos Extra:</span>
+                        <span class="text-green">+$<span id="resumenIngresosExtra">0.00</span></span>
+                    </div>
+                    <div class="resumen-item">
+                        <span>Saldo en Efectivo:</span>
+                        <span>$<span id="resumenSaldoEfectivo">0.00</span></span>
+                    </div>
+                </div>
+
+                <button class="btn btn-secondary" onclick="actualizarResumen()" style="width: 100%; margin-top: 1rem;">
+                    🔄 Actualizar Resumen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para cerrar turno -->
+    <div id="modalCerrarTurno" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔒 Arqueo Final - Cerrar Turno</h3>
+                <button class="modal-close" onclick="cerrarModal()">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="saldoFinalInput">Saldo Final en Efectivo (contado):</label>
+                <input type="number" id="saldoFinalInput" step="0.01" min="0" placeholder="0.00">
+                <small style="color: #666; font-size: 0.9rem;">
+                    Saldo esperado: $<span id="saldoEsperado">0.00</span>
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="notasCierre">Notas del cierre (opcional):</label>
+                <textarea id="notasCierre" rows="3" placeholder="Observaciones, diferencias encontradas, etc."></textarea>
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-secondary" onclick="cerrarModal()" style="flex: 1;">
+                    Cancelar
+                </button>
+                <button class="btn btn-danger" onclick="cerrarTurno()" style="flex: 1;">
+                    <span class="loading" id="loadingCerrar"></span>
+                    Cerrar Turno
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/pos.js"></script>
+</body>
+</html>

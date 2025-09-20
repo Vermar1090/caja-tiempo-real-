@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 flex items-center justify-center h-screen">
+
+  <div class="bg-gray-800 p-8 rounded-xl shadow-lg w-96">
+    <h1 class="text-2xl font-bold text-center text-white mb-6">🔑 Iniciar Sesión</h1>
+
+    <input id="nombre" type="text" placeholder="Usuario" class="w-full mb-3 p-2 rounded" />
+    <input id="password" type="password" placeholder="Contraseña" class="w-full mb-3 p-2 rounded" />
+
+    <button onclick="login()" class="w-full bg-blue-500 text-white py-2 rounded">Ingresar</button>
+    <p id="error" class="text-red-400 text-sm mt-2 hidden">Usuario o contraseña incorrectos</p>
+  </div>
+
+  <script>
+    async function login() {
+      const nombre = document.getElementById("nombre").value;
+      const password = document.getElementById("password").value;
+
+      const res = await fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, password })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem("usuario", data.usuario);
+        if (data.rol === "admin") {
+          location.href = "admin.html";
+        } else {
+          location.href = "pos.html";
+        }
+      } else {
+        document.getElementById("error").classList.remove("hidden");
+      }
+    }
+  </script>
+</body>
+</html>

@@ -362,7 +362,7 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`📊 Base de datos: ${dbPath}`);
   
   if (NODE_ENV === 'development') {
-    console.log(`🔗 Local: http://localhost:${PORT}`);
+    console.log(`🔗 Local: http://localhost:3000`);
   }
   
   console.log('\n👥 Usuarios de prueba:');
@@ -389,4 +389,5 @@ const gracefulShutdown = (signal) => {
 };
 
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
